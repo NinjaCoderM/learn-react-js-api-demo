@@ -1,16 +1,31 @@
-import React, { useState } from "react";
-import { createPost } from "../services/postService";
+import React, { useState, useEffect } from "react";
+import { createPost, updatePost } from "../services/postService";
 
-export default function PostForm({ posts, setPosts }) {
+export default function PostForm({
+  posts,
+  setPosts,
+  editingPost,
+  setEditingPost,
+}) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    addPost();
+    if (editingPost) {
+      editPost();
+    } else {
+      addPost();
+    }
     setTitle("");
     setBody("");
+    setEditingPost(null);
   };
+
+  useEffect(() => {
+    setTitle(editingPost ? editingPost.title : "");
+    setBody(editingPost ? editingPost.body : "");
+  }, [editingPost]);
 
   const addPost = () => {
     createPost({ title, body, userId: 99 })
@@ -21,6 +36,18 @@ export default function PostForm({ posts, setPosts }) {
           result.data,
           //{ id: result.data.id, userId: result.data.userId, title, body },
         ]);
+      })
+      .catch((err) => console.error(err));
+  };
+
+  const editPost = () => {
+    updatePost(editingPost.id, { title, body, userId: 99 })
+      .then((result) => {
+        console.log(result.data.id);
+        setPosts(
+          //[...posts.filter((post) => post.id != result.data.id), result.data,]
+          posts.map((post) => (post.id === editingPost.id ? result.data : post))
+        );
       })
       .catch((err) => console.error(err));
   };
@@ -43,7 +70,7 @@ export default function PostForm({ posts, setPosts }) {
       </div>
       <div>
         <button className="button" type="submit">
-          Add Post
+          {editingPost ? "Edit Post" : "Add Post"}
         </button>
       </div>
     </form>
