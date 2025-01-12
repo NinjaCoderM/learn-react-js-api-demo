@@ -3,6 +3,7 @@ import { getPosts, deletePost } from "../services/postService";
 
 export default function Posts() {
   const [posts, setPosts] = useState([]);
+  const [loadingIds, setLoadingIds] = useState([]);
   useEffect(() => {
     console.log("Load Posts");
     getPosts()
@@ -12,11 +13,15 @@ export default function Posts() {
       .catch((err) => console.error(err));
   }, []);
   const handleDelete = (id) => {
+    setLoadingIds((prev) => [...prev, id]);
     deletePost(id)
       .then((result) => {
         setPosts(posts.filter((post) => post.id != id));
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error(err))
+      .finally(() => {
+        setLoadingIds((prev) => prev.filter((loadingId) => loadingId !== id));
+      });
   };
   return (
     <div>
@@ -27,7 +32,11 @@ export default function Posts() {
             <h2>{post.title}</h2>
             <p>{post.body}</p>
             <button className="button" onClick={() => handleDelete(post.id)}>
-              Delete Post
+              {loadingIds.includes(post.id) ? (
+                <span className="spinner"></span>
+              ) : (
+                "Delete Post"
+              )}
             </button>
           </li>
         ))}
