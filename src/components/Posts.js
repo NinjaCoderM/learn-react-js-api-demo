@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getPosts } from "../services/postService";
+import { getPosts, deletePost } from "../services/postService";
 
 export default function Posts() {
   const [posts, setPosts] = useState([]);
@@ -11,6 +11,13 @@ export default function Posts() {
       })
       .catch((err) => console.error(err));
   }, []);
+  const handleDelete = (id) => {
+    deletePost(id)
+      .then((result) => {
+        setPosts(posts.filter((post) => post.id != id));
+      })
+      .catch((err) => console.error(err));
+  };
   return (
     <div>
       <h1>Posts</h1>
@@ -19,6 +26,9 @@ export default function Posts() {
           <li key={post.id}>
             <h2>{post.title}</h2>
             <p>{post.body}</p>
+            <button className="button" onClick={() => handleDelete(post.id)}>
+              Delete Post
+            </button>
           </li>
         ))}
       </ul>
